@@ -65,24 +65,7 @@ public class HttpServer implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         printMsg("New request: " + exchange.getRequestMethod() + " " + exchange.getRequestURI().getPath());
 
-        Request request = new Request(Method.fromString(exchange.getRequestMethod()), exchange.getRequestMethod(), exchange.getRequestHeaders(), exchange.getRequestURI().getPath()) {
-            @Override
-            public void setHeader(String name, String value) {
-                exchange.getResponseHeaders().set(name, value);
-            }
-
-            @Override
-            public InputStream getRequestBody() {
-                return exchange.getRequestBody();
-            }
-
-            @Override
-            public OutputStream beginBody(int code) throws IOException {
-                exchange.sendResponseHeaders(code, 0);
-                return exchange.getResponseBody();
-            }
-        };
-
+        Request request = Request.forExchange(exchange);
         RequestHandler handler = handlers.getHandler(request.getPath());
 
         if(handler != null) {

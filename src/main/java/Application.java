@@ -25,6 +25,11 @@ public class Application implements RequestHandler {
     @Override
     public void handleRequest(Request request) throws IOException {
         System.out.println("Handling " + request.getPath());
+
+        for(String key : request.getParameters().keySet()) {
+            System.out.println(key + "=" + request.getParameters().get(key));
+        }
+
         OutputStream outputStream = request.beginBody(200);
         PrintStream printStream = new PrintStream(outputStream);
         printStream.println("Hello World!");
