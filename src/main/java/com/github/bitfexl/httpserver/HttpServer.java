@@ -73,8 +73,6 @@ public class HttpServer implements HttpHandler {
         }
 
         exchange.close();
-
-        // System.out.println(URLDecoder.decode("asdf%20asdf", StandardCharsets.UTF_8));
     }
 
     public void setPrintStream(PrintStream printStream) {

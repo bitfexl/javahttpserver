@@ -38,6 +38,9 @@ public abstract class Request {
 
     private static HashMap<String, String> parseParameters(String rawParameters) {
         HashMap<String, String> parameters = new HashMap<>();
+        if(rawParameters == null) {
+            return parameters;
+        }
 
         for(String parameter : rawParameters.split("\\?")) {
             String[] parts = parameter.split("=");

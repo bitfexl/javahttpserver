@@ -18,7 +18,7 @@ public class Application implements RequestHandler {
 
     public void run() throws Exception {
         HttpServer server = new HttpServer().start(65500);
-        server.setHandler("/api/*", this);
+        server.setHandler("api/*", this);
         // server.stop();
     }
 

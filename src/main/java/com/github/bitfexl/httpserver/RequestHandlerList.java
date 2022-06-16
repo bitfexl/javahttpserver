@@ -5,6 +5,8 @@ import java.util.HashMap;
 public class RequestHandlerList {
     private HashMap<String, RequestHandler> handlers;
 
+    private HashMap<String, RequestHandler> subPathHandlers;
+
     /**
      * The default handler to use if no handler specified.
      */
@@ -12,6 +14,7 @@ public class RequestHandlerList {
 
     public RequestHandlerList() {
         this.handlers = new HashMap<>();
+        this.subPathHandlers = new HashMap<>();
     }
 
     /**
@@ -20,11 +23,13 @@ public class RequestHandlerList {
      * @param handler The handler to register.
      */
     public void setHandler(String path, RequestHandler handler) {
-        path = fixPath(path);
-        if(path.endsWith("*/")) {
-            path = path.substring(0, path.length()-1);
+        if(path.endsWith("*")) {
+            path = fixPath(path.substring(0, path.length()-1));
+            subPathHandlers.put(path, handler);
+        } else {
+            path = fixPath(path);
+            handlers.put(path, handler);
         }
-        handlers.put(path, handler);
     }
 
     /**
@@ -39,12 +44,9 @@ public class RequestHandlerList {
             return handler;
         }
 
-        for(String possiblePath : handlers.keySet()) {
-            if(possiblePath.endsWith("*")) {
-                String pathStart = possiblePath.substring(0, possiblePath.length()-1);
-                if(path.startsWith(pathStart)) {
-                    return handlers.get(possiblePath);
-                }
+        for(String possiblePath : subPathHandlers.keySet()) {
+            if(path.startsWith(possiblePath)) {
+                return subPathHandlers.get(possiblePath);
             }
         }
 
