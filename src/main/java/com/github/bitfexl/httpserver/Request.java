@@ -42,7 +42,7 @@ public abstract class Request {
             return parameters;
         }
 
-        for(String parameter : rawParameters.split("\\?")) {
+        for(String parameter : rawParameters.split("&")) {
             String[] parts = parameter.split("=");
             if(parts.length > 1) {
                 parameters.put(parts[0], URLDecoder.decode(parts[1], StandardCharsets.UTF_8));

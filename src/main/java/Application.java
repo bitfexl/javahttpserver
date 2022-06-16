@@ -30,7 +30,13 @@ public class Application implements RequestHandler {
             System.out.println(key + "=" + request.getParameters().get(key));
         }
 
-        OutputStream outputStream = request.beginBody(200);
+        int responseCode = 200;
+        if("google".equalsIgnoreCase(request.getParameters().get("redirect"))) {
+            request.setHeader("Location", "https://google.com/");
+            responseCode = 303;
+        }
+
+        OutputStream outputStream = request.beginBody(responseCode);
         PrintStream printStream = new PrintStream(outputStream);
         printStream.println("Hello World!");
     }
