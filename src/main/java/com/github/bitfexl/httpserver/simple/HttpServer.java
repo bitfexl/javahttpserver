@@ -1,11 +1,9 @@
-package com.github.bitfexl.httpserver;
+package com.github.bitfexl.httpserver.simple;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 
@@ -17,7 +15,7 @@ public class HttpServer implements HttpHandler {
      * Can be null.
      * Default: System.out
      */
-    private PrintStream printStream;
+    protected PrintStream printStream;
 
     private RequestHandlerList handlers;
 
@@ -92,7 +90,7 @@ public class HttpServer implements HttpHandler {
         handlers.setHandler(path, handler);
     }
 
-    private void printMsg(String msg) {
+    protected void printMsg(String msg) {
         if(printStream != null) {
             printStream.println(msg);
         }

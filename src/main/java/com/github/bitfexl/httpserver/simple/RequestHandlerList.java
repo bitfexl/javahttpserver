@@ -1,4 +1,4 @@
-package com.github.bitfexl.httpserver;
+package com.github.bitfexl.httpserver.simple;
 
 import java.util.HashMap;
 

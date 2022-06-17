@@ -1,5 +1,6 @@
-package com.github.bitfexl.httpserver;
+package com.github.bitfexl.httpserver.simple;
 
+import com.github.bitfexl.httpserver.Method;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -29,8 +30,8 @@ public abstract class Request {
             }
 
             @Override
-            public OutputStream beginBody(int code) throws IOException {
-                exchange.sendResponseHeaders(code, 0);
+            public OutputStream beginBody(int code, long length) throws IOException {
+                exchange.sendResponseHeaders(code, length);
                 return exchange.getResponseBody();
             }
         };
@@ -96,7 +97,7 @@ public abstract class Request {
 
     /**
      * Get the input stream for the request body.
-     * @return An input stream from wich the body can be read.
+     * @return An input stream from which the body can be read.
      */
     public abstract InputStream getRequestBody();
 
@@ -107,7 +108,19 @@ public abstract class Request {
      * @param code The http response code.
      * @return Output stream for writing the body.
      */
-    public abstract OutputStream beginBody(int code) throws IOException;
+    public OutputStream beginBody(int code) throws IOException {
+        return beginBody(code, 0);
+    }
+
+    /**
+     * The output stream to write the response to.
+     * Sends the headers and begins the body -> no headers can be set after calling.
+     * Must be closed to terminate the exchange.
+     * @param code The http response code.
+     * @param length <0: no body, =0 chunked encoding, >0 exact body length; (as in com.sun.net.httpserver.HttpExchange.sendHeaders(int, long))
+     * @return Output stream for writing the body.
+     */
+    public abstract OutputStream beginBody(int code, long length) throws IOException;
 
     public Method getMethod() {
         return method;
