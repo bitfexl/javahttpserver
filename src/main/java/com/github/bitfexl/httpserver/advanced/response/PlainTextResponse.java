@@ -6,6 +6,28 @@ import java.nio.charset.StandardCharsets;
 
 public class PlainTextResponse extends Response {
     /**
+     * Create a new plain text response.
+     * @param code The http status code.
+     * @param content The response content.
+     * @return The new response.
+     */
+    public static PlainTextResponse of(int code, String content) {
+        PlainTextResponse response = new PlainTextResponse();
+        response.setResponseCode(code);
+        response.setContent(content);
+        return response;
+    }
+
+    /**
+     * Create a new plain text response.
+     * @param content The response content.
+     * @return The new response.
+     */
+    public static PlainTextResponse of(String content) {
+        return of(200, content);
+    }
+
+    /**
      * The body content to send
      */
     private String content;

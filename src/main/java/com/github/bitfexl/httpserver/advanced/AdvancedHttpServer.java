@@ -3,9 +3,14 @@ package com.github.bitfexl.httpserver.advanced;
 import com.github.bitfexl.httpserver.advanced.annotations.Handler;
 import com.github.bitfexl.httpserver.advanced.annotations.Param;
 import com.github.bitfexl.httpserver.advanced.annotations.Path;
+import com.github.bitfexl.httpserver.advanced.response.JsonResponse;
+import com.github.bitfexl.httpserver.advanced.response.PlainTextResponse;
 import com.github.bitfexl.httpserver.advanced.response.Response;
 import com.github.bitfexl.httpserver.simple.HttpServer;
 import com.github.bitfexl.httpserver.simple.Request;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.sun.net.httpserver.Headers;
 
 import java.io.IOException;
@@ -19,14 +24,31 @@ import java.util.HashMap;
  * Error messages:
  * [ERR]: The request could not be handled at all (but should have been), programming error.
  * [WRN]: The request could not be handled (probably intended) or only partially handled (no response).
+ * If a request fails due to an incorrect body (json parsing exception) "400 Bad Request" is returned as plain text.
  */
 public class AdvancedHttpServer extends HttpServer {
+    /**
+     * Gson mapper to use.
+     */
+    private Gson gson;
+
+    /**
+     * Init a new http server with print stream set to stdout.
+     * @param gson The json mapper to use for body.
+     * @throws IOException Error creating http server.
+     */
+    public AdvancedHttpServer(Gson gson) throws IOException {
+        this.gson = gson;
+    }
+
     /**
      * Init a new http server with print stream set to stdout.
      *
      * @throws IOException Error creating http server.
      */
-    public AdvancedHttpServer() throws IOException { }
+    public AdvancedHttpServer() throws IOException {
+        this(new GsonBuilder().create());
+    }
 
     /**
      * Add a handler. The handler has to be marked with @Path (the path to handle),
@@ -43,16 +65,24 @@ public class AdvancedHttpServer extends HttpServer {
         setHandler(handlerPath.path(), (request) -> {
             Method handlerMethod = getHandlerMethod(handler, request);
             Object response = null;
+
             if(handlerMethod != null) {
                 response = callHandler(handler, handlerMethod, request);
             }
+
+            // reply with response of method
+            // else reply with json representation of object
+            // null -> empty response
             if(response instanceof Response) {
                 ((Response) response).replyTo(request);
+            } else if(response != null) {
+                String json = gson.toJson(response);
+                JsonResponse.of(json).replyTo(request);
             }
         });
     }
 
-    private Object callHandler(Object handler, Method handlerMethod, Request request) {
+    private Object callHandler(Object handler, Method handlerMethod, Request request) throws IOException {
         String handlerMsg = request.getRawMethod() + " " + request.getPath();
         String inHandlerMsg = "in handler " + handlerMsg;
 
@@ -92,9 +122,20 @@ public class AdvancedHttpServer extends HttpServer {
                     params[i] = request.getParameters();
                     break;
                 case BODY:
-                    printMsg("[ERR] Parameter 'body' currently not supported " + inHandlerMsg);
-                    return null;
-                    // break;
+                    // body can be either string (raw body) or an object (parsed json);
+                    // return "400 Bad Request" if body cannot be parsed;
+                    String body = new String(request.getRequestBody().readAllBytes());
+                    if(parameter.getType().equals(body.getClass())) {
+                        params[i] = body;
+                    } else {
+                        try {
+                            params[i] = gson.fromJson(body, parameter.getType());
+                        } catch (JsonParseException ex) {
+                            printMsg("[WRN] Parameter 'body' could not be parsed (bad request) " + inHandlerMsg);
+                            return PlainTextResponse.of(400, "400 Bad Request");
+                        }
+                    }
+                    break;
             }
         }
 

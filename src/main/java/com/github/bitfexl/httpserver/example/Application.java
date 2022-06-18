@@ -1,20 +1,16 @@
-import com.github.bitfexl.httpserver.Method;
+package com.github.bitfexl.httpserver.example;
+
 import com.github.bitfexl.httpserver.advanced.AdvancedHttpServer;
-import com.github.bitfexl.httpserver.advanced.annotations.Handler;
-import com.github.bitfexl.httpserver.advanced.annotations.Param;
 import com.github.bitfexl.httpserver.advanced.annotations.Path;
-import com.github.bitfexl.httpserver.advanced.response.HTMLResponse;
 import com.github.bitfexl.httpserver.advanced.response.PlainTextResponse;
-import com.github.bitfexl.httpserver.advanced.response.Response;
-import com.github.bitfexl.httpserver.simple.HttpServer;
+import com.github.bitfexl.httpserver.example.endpoints.LoggingHandler;
+import com.github.bitfexl.httpserver.example.endpoints.PersonHandler;
 import com.github.bitfexl.httpserver.simple.Request;
 import com.github.bitfexl.httpserver.simple.RequestHandler;
 
-import javax.imageio.plugins.tiff.GeoTIFFTagSet;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
 
 @Path(path="/")
 public class Application implements RequestHandler {
@@ -29,28 +25,19 @@ public class Application implements RequestHandler {
 
     public void run() throws Exception {
         AdvancedHttpServer server = new AdvancedHttpServer();
+
+        // default (not found) handler
         server.setDefaultHandler(this::defaultHandler);
-        server.setHandler("api/*", this);
-        server.addHandler(this);
+
+        // simple version
+        server.setHandler("/", this);
+
+        // advanced version
+        server.addHandler(new PersonHandler());
+        server.addHandler(new LoggingHandler());
+
         server.start(65500);
         // server.stop();
-    }
-
-    /// advanced version ///
-    @Handler(method = Method.GET)
-    public Response helloWorld(
-            @Param(Param.Type.PARAMS) HashMap<String, String> params,
-            @Param(Param.Type.HEADERS) HashMap<String, String> headers) {
-
-        System.out.println("Request from: " + headers.get("user-agent"));
-
-        for(String param : params.keySet()) {
-            System.out.println(param + "=" + params.get(param));
-        }
-
-        PlainTextResponse response = new HTMLResponse();
-        response.setContent("<h1>Hello World!!!!!</h1>This is a test.");
-        return response;
     }
 
     /// "simple" version ///
