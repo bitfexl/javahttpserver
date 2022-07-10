@@ -6,11 +6,10 @@ public enum Method {
     GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH, UNKNOWN;
 
     public static Method fromString(String rawMethod) {
-        for(Method method : new Method[]{ GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH }) {
-            if(rawMethod.equalsIgnoreCase(method.toString())) {
-                return method;
-            }
+        try {
+            return Method.valueOf(rawMethod.toUpperCase());
+        } catch (Exception ex) {
+            return UNKNOWN;
         }
-        return UNKNOWN;
     }
 }
