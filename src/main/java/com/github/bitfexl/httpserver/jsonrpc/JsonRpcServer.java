@@ -5,6 +5,7 @@ import com.github.bitfexl.httpserver.jsonrpc.execution.RpcCallException;
 import com.github.bitfexl.httpserver.jsonrpc.http.JsonRpcRequest;
 import com.github.bitfexl.httpserver.simple.HttpServer;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,12 +40,28 @@ public class JsonRpcServer extends HttpServer {
         return this;
     }
 
+    /**
+     * Add a json rpc handler which can be called using json rpc requests.
+     * @param path The path of the handler.
+     * @param handler A handler containing public methods tagged with @JsonRpcMethod.
+     */
     public void setJsonRpcHandler(String path, Object handler) {
         JsonRpcExecutor executor = new JsonRpcExecutor(handler);
 
         setHandler(path, (request) -> {
             String body = new String(request.getRequestBody().readAllBytes());
-            JsonRpcRequest rpcRequest = gson.fromJson(body, JsonRpcRequest.class);
+
+            JsonRpcRequest rpcRequest;
+            try {
+                rpcRequest = gson.fromJson(body, JsonRpcRequest.class);
+            } catch (JsonParseException ex) {
+                request.beginBody(400, 0);
+                return;
+            }
+            if(rpcRequest == null) {
+                request.beginBody(400, 0);
+                return;
+            }
 
             String responseJson;
             try {

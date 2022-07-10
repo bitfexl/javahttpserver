@@ -9,17 +9,17 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public class JsonRpcExecutor {
-    private static final String JSON_RPC_VERSION = "2.0";
+    protected static final String JSON_RPC_VERSION = "2.0";
 
     /**
      * The object to call the methods on.
      */
-    private Object rpcMethodsHolder;
+    protected Object rpcMethodsHolder;
 
     /**
      * All possible methods to call.
      */
-    private HashMap<String, Method> rpcMethods;
+    protected HashMap<String, Method> rpcMethods;
 
     public JsonRpcExecutor(Object rpcMethodsHolder) {
         this.rpcMethodsHolder = rpcMethodsHolder;
